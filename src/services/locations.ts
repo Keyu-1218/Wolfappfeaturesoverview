@@ -35,7 +35,7 @@ export async function fetchFoodLocations(
         type: "restaurant",
         lat: restaurant.lat,
         lng: restaurant.lon,
-        photo: "./assets/placeholder.png",      // or generate from your design
+        photo: "./assets/placeholder.png",
         visited: false,
         tags: [],
         cuisine: undefined,
@@ -49,8 +49,6 @@ export async function fetchFoodLocations(
   const uniqueLocations = Array.from(
     new Map(locations.map(loc => [loc.id, loc])).values()
   );
-
-  console.log("restaurants: ", uniqueLocations);
 
   return uniqueLocations;
 }
