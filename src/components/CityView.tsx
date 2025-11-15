@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MapPin,
   Coffee,
@@ -16,21 +16,8 @@ import {
   Filter,
 } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-
-type PlaceType = "restaurant" | "cafe" | "bar" | "store";
-
-interface FoodLocation {
-  id: number;
-  name: string;
-  type: PlaceType;
-  lat: number;
-  lng: number;
-  photo: string;
-  visited: boolean;
-  tags?: string[];
-  cuisine?: string;
-  visitCount?: number;
-}
+import { fetchFoodLocations } from "../services/locations";
+import { FoodLocation, PlaceType } from "../types";
 
 export function CityView() {
   const [selectedLocation, setSelectedLocation] = useState<
@@ -51,96 +38,16 @@ export function CityView() {
 
   const cityName = "New York";
 
-  const foodLocations: FoodLocation[] = [
-    {
-      id: 1,
-      name: "Bella Italia",
-      type: "restaurant",
-      lat: 40.758,
-      lng: -73.9855,
-      cuisine: "Italian",
-      photo: "italian pasta dish",
-      visited: true,
-      visitCount: 6,
-    },
-    {
-      id: 2,
-      name: "Sushi Master",
-      type: "restaurant",
-      lat: 40.7614,
-      lng: -73.9776,
-      cuisine: "Japanese",
-      photo: "sushi platter",
-      visited: true,
-      visitCount: 4,
-    },
-    {
-      id: 3,
-      name: "Green Bowl",
-      type: "cafe",
-      lat: 40.7489,
-      lng: -73.968,
-      cuisine: "Healthy",
-      photo: "healthy salad bowl",
-      visited: true,
-      visitCount: 3,
-    },
-    {
-      id: 4,
-      name: "Taco Fiesta",
-      type: "restaurant",
-      lat: 40.7527,
-      lng: -73.9772,
-      cuisine: "Mexican",
-      photo: "tacos",
-      visited: false,
-    },
-    {
-      id: 5,
-      name: "Café Breeze",
-      type: "cafe",
-      lat: 40.7558,
-      lng: -73.9865,
-      cuisine: "Coffee",
-      photo: "coffee latte art",
-      visited: true,
-      tags: ["Pet-friendly"],
-      visitCount: 2,
-    },
-    {
-      id: 6,
-      name: "Spice Route",
-      type: "restaurant",
-      lat: 40.7505,
-      lng: -73.9934,
-      cuisine: "Indian",
-      photo: "indian curry",
-      visited: false,
-      tags: ["Women Entrepreneur", "New"],
-    },
-    {
-      id: 7,
-      name: "Urban Bites",
-      type: "cafe",
-      lat: 40.7595,
-      lng: -73.9845,
-      cuisine: "Brunch",
-      photo: "avocado toast",
-      visited: false,
-      tags: ["Pet-friendly"],
-    },
-    {
-      id: 8,
-      name: "Wine & Dine",
-      type: "bar",
-      lat: 40.752,
-      lng: -73.98,
-      cuisine: "Wine Bar",
-      photo: "wine glasses",
-      visited: true,
-      visitCount: 2,
-    },
-  ];
+  // fetching restaurants
+  const [foodLocations, setLocations] = useState<FoodLocation[]>([]);
+  const userId = 1;  // or get from auth
+
+  useEffect(() => {
+    fetchFoodLocations(userId, 1.0, 1.0, 5.0)
+      .then(setLocations)
+      .catch(err => console.error(err));
+  }, []);
+
 
   const activeQuests = [
     {
@@ -149,7 +56,7 @@ export function CityView() {
       progress: 0,
       total: 1,
       reward: "15% off",
-      targetLocations: [6],
+      targetLocations: [1],
     },
     {
       id: 2,
@@ -157,7 +64,7 @@ export function CityView() {
       progress: 1,
       total: 3,
       reward: "$10 coupon",
-      targetLocations: [5, 7],
+      targetLocations: [2],
     },
   ];
 
@@ -176,12 +83,13 @@ export function CityView() {
 
   // Combine visited locations with quest targets for display
   const displayedLocations = [
-    ...visitedLocations.filter((loc) =>
-      selectedTypes.includes(loc.type),
-    ),
-    ...questTargetLocations.filter(
-      (loc) => !loc.visited && selectedTypes.includes(loc.type),
-    ),
+    // ...visitedLocations.filter((loc) =>
+    //   selectedTypes.includes(loc.type),
+    // ),
+    // ...questTargetLocations.filter(
+    //   (loc) => !loc.visited && selectedTypes.includes(loc.type),
+    // ),
+    ...foodLocations
   ];
 
   const toggleType = (type: PlaceType) => {
@@ -281,7 +189,7 @@ export function CityView() {
         <div className="absolute inset-0">
           {displayedLocations.map((location, index) => {
             const Icon = getTypeIcon(location.type);
-            const top = 25 + (index % 4) * 18;
+            const top = 35 + (index % 4) * 18;
             const left = 15 + Math.floor(index / 4) * 30;
             const isQuestTarget = questTargetLocations.some(
               (q) => q.id === location.id,
@@ -342,16 +250,20 @@ export function CityView() {
           })}
 
           {/* Path connecting visited locations */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
+          {/* <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
             <path
-              d="M 15% 25% L 45% 25% L 45% 43% L 15% 61% L 15% 79%"
+              d="M 15 25 L 45 25 L 45 43 L 15 61 L 15 79"
               stroke="#009de0"
               strokeWidth="2"
               fill="none"
               strokeDasharray="5,5"
               opacity="0.4"
             />
-          </svg>
+          </svg> */}
         </div>
 
         {/* Filter Panel - Expanded by default */}
